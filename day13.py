@@ -24,7 +24,7 @@ def part1(time, buses):
     print(f"Best bus is {best_bus}, wait of {best_time} minutes. Result: {best_bus * best_time}.")
 
 # Find aligned time and increment for first 2 buses with the largest codes.
-# Using that aligned time and increment to find aligned for 3 buses. Repeat
+# Use that aligned time and increment to find aligned time for 3 buses. Repeat
 # until aligned time for all buses is found.
 def part2(buses):
     t = 0
