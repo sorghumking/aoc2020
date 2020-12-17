@@ -57,7 +57,7 @@ def part2(rules, tickets):
     rules_results = []
     rules_names = []
 
-    # for each rule, count all valid entries for each position in a ticket
+    # for each rule, count all valid entries for each position in all tickets
     for r in rules:
         name, min1, max1, min2, max2 = r
         valid_idxs = [0] * len(tickets[0])
@@ -68,23 +68,20 @@ def part2(rules, tickets):
         rules_results.append(valid_idxs)
         rules_names.append(name)
 
-
-    # Find the entry position at which every ticket has a valid value for a rule, there
-    # will be only one. Note that position and name. Ignore that position and search for
-    # a new position for which every ticket has a valid value for a rule. Proceed until
+    # For each rule, find the entry positions where every ticket has a valid value for the rule.
+    # There will be exactly one position for which only one rule is valid for all tickets.
+    # Note that position and the rule name. Ignore that position and search for a
+    # new position for which only one rule is valid for all tickets. Repeat until
     # all rules are accounted for.
     set_rule_names = []
     set_rules = []
     while len(set_rules) < len(rules):
         for ridx in range(len(rules_results)):
             rr = rules_results[ridx]
-            # print(f"Rule {rules_names[ridx]}")
-            # print(f"{rr}")
-            entries = [idx for idx in range(len(rr)) if rr[idx] == len(tickets) and idx not in set_rules]
-            # print(f"{rr.count(len(tickets))} possible entries: {entries}")
-            if len(entries) == 1:
+            all_valid_idxs = [idx for idx in range(len(rr)) if rr[idx] == len(tickets) and idx not in set_rules]
+            if len(all_valid_idxs) == 1:
                 set_rule_names.append(rules_names[ridx])
-                set_rules.append(entries[0])
+                set_rules.append(all_valid_idxs[0])
                 break
 
     # Gather entry positions of "departure" rules
@@ -107,6 +104,4 @@ if __name__ == "__main__":
     input_file = "inputs/{}.txt".format(basename(__file__).replace(".py", ""))
     rules, tickets = parse_input(input_file)
     valid_tickets = part1(rules, tickets)
-    # print(f"{len(valid_tickets)} valid tickets out of {len(tickets)}.")
-    # print(f"rules count = {len(rules)}, ticket len = {len(tickets[0])}")
     part2(rules, valid_tickets)
