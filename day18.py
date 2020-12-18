@@ -1,6 +1,7 @@
 from os.path import basename
 import re
 
+# return list of each operand and operator, with nested lists for parentheses
 def parse_input(input_file):
     with open(input_file) as f:
         lines = f.read().splitlines()
@@ -54,6 +55,32 @@ def evaluate(exp):
             vals = [result]
     return vals[0]
 
+def evaluate2(exp):
+    op = None
+    vals = []
+    new_exp = []
+    for idx, c in enumerate(exp):
+        if type(c) is list:
+            vals.append(evaluate2(c))
+        elif type(c) is int:
+            vals.append(c)
+        else:
+            op = c
+
+        if len(vals) == 2: 
+            if op == '*':
+                new_exp.append(vals[0])
+                new_exp.append('*')
+                vals = [vals[1]]
+            else:
+                result = compute(op, vals[0], vals[1])
+                vals = [result]
+    if len(new_exp) == 0:
+        return vals[0]
+    else:
+        return evaluate(new_exp + [vals[0]])
+
+
 def compute(op, val1, val2):
     if op == '+':
         return val1 + val2
@@ -61,10 +88,11 @@ def compute(op, val1, val2):
         return val1 * val2
 
 def part2(probs):
-    pass
+    results = [evaluate2(p) for p in probs]
+    print(f"Sum of all results is {sum(results)}")
 
 if __name__ == "__main__":
     input_file = "inputs/{}.txt".format(basename(__file__).replace(".py", ""))
     probs = parse_input(input_file)
     part1(probs)
-    # part2(foo)
+    part2(probs)
