@@ -16,7 +16,7 @@ def parse_input(input_file):
                 if len(items.split(" ")) == 1:
                     tok = items.split(" ")[0]
                     if tok in ['"a"', '"b"']:
-                        rules[num] = tok.replace('"', '')
+                        rules[num] = [tok.replace('"', '')]
                     else:
                         rules[num] = [int(tok)]
                 elif len(items.split("|")) == 1:
@@ -32,8 +32,9 @@ def parse_input(input_file):
 
 def part1(rules, messages):
     total_matches = 0
+    r0 = resolve(0, rules)
     for m in messages:
-        r0 = resolve_rule(0, rules)
+        # r0 = resolve_rule(0, rules)
         if match(r0, m):
             # print(f"{m} matches!")
             total_matches += 1
@@ -42,6 +43,38 @@ def part1(rules, messages):
         # cur_rule = rules[rulenum]
         # rr = resolve_rule(rulenum, rules)
         # print(f"{rulenum}: {rr}")
+
+def resolve(rulenum, rules):
+    cur = rules[rulenum]
+    assert type(cur) == list
+    if cur[0] in ['a', 'b']:
+        return cur
+    elif type(cur[0]) == int:
+        resolved_rules = [resolve(cur[i], rules) for i in range(len(cur))]
+        if len(resolved_rules) == 1:
+            return resolved_rules[0]
+        elif len(resolved_rules) == 2:
+            return combine(resolved_rules[0], resolved_rules[1])
+        elif len(resolved_rules) == 3:
+            # c1 = combine(resolved_rules[0], resolved_rules[1])
+            # c2 = combine(c1, resolved_rules[2])
+            return resolved_rules
+        else:
+            assert False, f"Unexpected length of resolved rules {len(resolved_rules)} for int rule {cur}"
+    elif type(cur[0]) == list:
+        options = []
+        for optional_rule in cur:
+            resolved_rules = [resolve(optional_rule[i], rules) for i in range(len(optional_rule))]
+            if len(resolved_rules) == 2:
+                resolved_rules = combine(resolved_rules[0], resolved_rules[1])
+            options.append(resolved_rules)
+        if len(options) == 1:
+            return options[0]
+        elif len(options) == 2:
+            return options[0] + options[1]
+        else:
+            assert False, f"Unexpected length of resolved rules {len(resolved_rules)} for list rule {cur}"
+        
 
 def match(rule, message):
     matches = True
@@ -121,10 +154,42 @@ def combine(l1, l2):
 def part2(foo):
     pass
 
+def analyze_rules(rules):
+    counts = {'str': 0, 'single': 0, 'double': 0, 'triple+': 0, '1-or-1': 0, '2-or-1': 0, '1-or-2': 0, '2-or-2': 0}
+    for num, rule in rules.items():
+        if rule in ['a','b']:
+            counts['str'] += 1
+        elif type(rule[0]) == int:
+            if len(rule) == 1:
+                counts['single'] += 1
+                print(f"single rule {num}: {rule}")
+            elif len(rule) == 2:
+                counts['double'] += 1
+            else:
+                counts['triple+'] += 1
+        elif type(rule[0]) == list:
+            if len(rule) == 1:
+                print(f"Unexpected rule list with length 1: {rule}")
+                return
+            elif len(rule) == 2:
+                if len(rule[0]) == 1 and len(rule[1]) == 1:
+                    counts['1-or-1'] += 1
+                    print(f"1-or-1 rule {num}: {rule}")
+                elif len(rule[0]) == 1 and len(rule[1]) == 2:
+                    counts['1-or-2'] += 1
+                elif len(rule[0]) == 2 and len(rule[1]) == 1:
+                    counts['2-or-1'] += 1
+                elif len(rule[0]) == 2 and len(rule[1]) == 2:
+                    counts['2-or-2'] += 1
+                else:
+                    print(f"Unexpected list of rule lists: {rule}")
+    print(counts)
+
 if __name__ == "__main__":
     input_file = "inputs/{}.txt".format(basename(__file__).replace(".py", ""))
     rules, messages = parse_input(input_file)
-    print(rules)
-    print(messages)
+    # analyze_rules(rules)
+    # print(rules)
+    # print(messages)
     part1(rules, messages)
     # part2(foo)
